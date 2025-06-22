@@ -1,42 +1,28 @@
 org: jucada2
-service: api-comentario
+service: api-ingesta
 
 provider:
   name: aws
-  runtime: python3.12	
-  # Default memory size for functions (default: 1024MB)
-  memorySize: 1024
-  timeout: 30
-  iam:
-    role: arn:aws:iam::395409307624:role/LabRole	
+  runtime: python3.12
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
   environment:
-    TABLE_NAME: ${sls:stage}-t_comentarios
-
-functions:
-  crear:
-    handler: comentario.lambda_handler
-    events:
-      - http:
-          path: /comentario/crear
-          method: post
-          cors: true
-          integration: lambda
+    INGEST_BUCKET: ${self:service}-ingesta-${self:provider.stage}
+  iam:
+    role: arn:aws:iam::395409307624:role/LabRole
 
 resources:
   Resources:
-    TablaComentarios:
-      Type: AWS::DynamoDB::Table
+    IngestBucket:
+      Type: AWS::S3::Bucket
       Properties:
-        TableName: ${self:provider.environment.TABLE_NAME}
-        AttributeDefinitions:
-          - AttributeName: tenant_id
-            AttributeType: S
-          - AttributeName: uuid
-            AttributeType: S
-        KeySchema:
-          - AttributeName: tenant_id
-            KeyType: HASH
-          - AttributeName: uuid
-            KeyType: RANGE
-        # Set the capacity to auto-scale
-        BillingMode: PAY_PER_REQUEST
+        BucketName: ${self:provider.environment.INGEST_BUCKET}
+
+functions:
+  comentario:
+    handler: comentario.lambda_handler
+    events:
+      - http:
+          path: /comentario
+          method: post
+          cors: true
