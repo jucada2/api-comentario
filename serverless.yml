@@ -1,4 +1,4 @@
-org: geraldocolchado
+org: jucada2
 service: api-comentario
 
 provider:
@@ -8,7 +8,7 @@ provider:
   memorySize: 1024
   timeout: 30
   iam:
-    role: arn:aws:iam::447891120606:role/LabRole	
+    role: arn:aws:iam::395409307624:role/LabRole	
   environment:
     TABLE_NAME: ${sls:stage}-t_comentarios
 
